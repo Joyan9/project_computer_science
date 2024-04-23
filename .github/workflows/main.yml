@@ -1,0 +1,25 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+      
+      - name: Set environment variable
+        env:
+          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
+        run: |
+          export SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY
+          echo "SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY" >> $GITHUB_ENV
+
+      - name: Deploy with Streamlit
+        run: |
+          # Your deployment commands using the service account key as environment variable
+          echo $SERVICE_ACCOUNT_KEY
