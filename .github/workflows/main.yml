@@ -1,25 +1,19 @@
-name: Deploy
+name: Run Python Script
 
 on:
-  push:
-    branches:
-      - main
+  workflow_dispatch:
+
+env:
+  service_account_key: ${{ secrets.SERVICE_ACCOUNT_KEY }}
 
 jobs:
-  deploy:
+  run-python:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
-      
-      - name: Set environment variable
-        env:
-          SERVICE_ACCOUNT_KEY: ${{ secrets.SERVICE_ACCOUNT_KEY }}
-        run: |
-          export SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY
-          echo "SERVICE_ACCOUNT_KEY=$SERVICE_ACCOUNT_KEY" >> $GITHUB_ENV
+        uses: actions/checkout@v3
 
-      - name: Deploy with Streamlit
-        run: |
-          # Your deployment commands using the service account key as environment variable
-          echo $SERVICE_ACCOUNT_KEY
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
