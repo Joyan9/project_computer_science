@@ -12,7 +12,15 @@ from PyPDF2 import PdfReader
 # Set the default theme to wide
 st.set_page_config(layout="wide")
 
+# Convert the AttrDict to a regular dictionary
+service_account_info = dict(st.secrets["gcp_service_account"])
 
+# Write the service account info to a temporary JSON file
+with open("service_account_key.json", "w") as f:
+    json.dump(service_account_info, f)
+
+# Set the environment variable for Google Cloud credentials
+os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "service_account_key.json"
 
 PROJECT_ID = "437222221292"
 LOCATION = "us"
@@ -27,9 +35,6 @@ st.write("Welcome to the Bank Statement Analyzer. This tool helps you analyze yo
 # Add some vertical space
 st.write("\n" * 10)  # This will add 5 new lines as space
 
-# Set the environment variable (optional, can be done before running the script).
-KEY_PATH = "C:\\Users\\HP\\Downloads\\service_account_key_for_project.json"
-os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = KEY_PATH
 
 # Function to process the PDF online
 @st.cache_data(show_spinner=False)
