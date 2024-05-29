@@ -6,6 +6,7 @@ import plotly.graph_objects as go
 from typing import List, Sequence
 from google.cloud import documentai
 import os
+import json
 from PyPDF2 import PdfReader
 
 
