@@ -31,8 +31,10 @@ PROCESSOR_ID = "372c4ab238787a42"
 st.markdown('<h1 style="text-align: center;">Bank Statement Analyzer</h1>', unsafe_allow_html=True)
 
 # Some introductory content
-st.write("Welcome to the Bank Statement Analyzer. This tool helps you analyze your bank statements.")
+st.write("Welcome to the Bank Statement Analyzer. This tool will help you analyze your bank statements by providing you an interactive dataframe and a few visualisations based on the transactions.")
 
+# Some introductory content
+st.write("Note - This web-app was created for academic purpose only and not for production level. Secondly, the app does not store any data on the servers.")
 # Add some vertical space
 st.write("\n" * 10)  # This will add 5 new lines as space
 
@@ -123,6 +125,9 @@ def convert_pdf_to_dataframe(
                 unique_header_values.add(tuple(header_values[0]))
 
     unique_header_values = list(unique_header_values)
+    
+    #remove the empty strings
+    unique_header_values = [sublist for sublist in unique_header_values if all(item != "" for item in sublist) and len(sublist) > 4]
     st.session_state.selected_table = st.radio(
         "Please Select the table containing the transaction records:",
         unique_header_values,
@@ -172,12 +177,13 @@ if "selected_columns" not in st.session_state:
 @st.cache_data(show_spinner=False)
 def categorize_transaction(description: str) -> str:
     categories = {
-        'Food': ['restaurant', 'cafe', 'food', 'dining'],
+        'Food': ['restaurant', 'cafe', 'food', 'dining','club'],
         'Transport': ['uber', 'lyft', 'taxi', 'bus', 'train', 'flight'],
         'Shopping': ['amazon', 'store', 'shop', 'walmart', 'target'],
         'Utlity Bills': ['electricity', 'water', 'gas', 'internet'],
         'Entertainment': ['netflix', 'spotify', 'movie', 'cinema'],
         'Healthcare': ['pharmacy', 'doctor', 'hospital', 'clinic'],
+        'Investment': ['stocks','clearance','fixed deposit','gold'],
         'Others': []
     }
 
@@ -284,23 +290,6 @@ if uploaded_file is not None:
                                 filtered_df.columns = [
                                     key for key in selected_columns.keys()]
                                
-                                # Split 'transaction_date' column into two separate columns based on space
-                                split_dates = filtered_df['transaction_date'].str.split(' ', n=1, expand=True)
-                                filtered_df['transaction_date_1'] = split_dates[0]
-                                filtered_df['transaction_date_2'] = split_dates[1]
-                                
-                                # Function to handle cases where the split does not result in two elements
-                                def handle_duplicate_dates(row):
-                                    if pd.notna(row['transaction_date_2']):
-                                        return row['transaction_date_1']
-                                    else:
-                                        return row['transaction_date']
-                                
-                                # Apply the function to handle duplicate dates
-                                filtered_df['transaction_date'] = filtered_df.apply(handle_duplicate_dates, axis=1)
-                                
-                                # Drop the intermediate columns
-                                filtered_df.drop(columns=['transaction_date_1', 'transaction_date_2'], inplace=True)
                                 
                                 
                                 filtered_df.replace({'transaction_date': {"": np.nan}
@@ -367,6 +356,7 @@ if uploaded_file is not None:
                                                                 "Utlity Bills",
                                                                 "Entertainment",
                                                                 "Education",
+                                                                "Investment",
                                                                 "Others"
                                                             ],
                                                        required=True
