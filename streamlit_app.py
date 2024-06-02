@@ -107,6 +107,7 @@ def text_anchor_to_text(text_anchor: documentai.Document.TextAnchor, text: str) 
 
 
 # Function to convert PDF to DataFrame
+
 def convert_pdf_to_dataframe(
     file_content: bytes, project_id: str, location: str, processor_id: str, table_index: int
 ) -> pd.DataFrame:
@@ -235,33 +236,17 @@ def download_pdf(url):
         return None
 
 
-col1, col2 = st.columns(2)
-
-# Button to use the sample bank statement
-sample_pdf_button = col1.button(label='Use Sample Bank Statement', 
-                                key='sample_pdf', 
-                                type="primary",
-                                use_container_width = True)
-sample_file = None
-
-if sample_pdf_button or st.session_state.sample_pdf:
-    pdf_content = download_pdf(pdf_url)
-    if pdf_content:
-        st.success("Sample bank statement loaded successfully.")
-        sample_file = pdf_content
-    else:
-        st.write("Unable to load the sample bank statement. Please try again later.")
-
 # Download the PDF
 pdf_content = download_pdf(pdf_url)
 
 if pdf_content:
-    col2.download_button(
-        label="Download Sample Bank Statement",
+    st.download_button(
+        label="Download a Sample Bank Statement For Trial",
         data=pdf_content,
         file_name="Wells_Fargo_Bank_Sample_Statement.pdf",
         mime="application/pdf",
-        use_container_width = True
+        use_container_width = True,
+        type="primary"
     )
 else:
     st.write("Unable to provide the sample bank statement. Please try again later.")
@@ -456,173 +441,5 @@ if uploaded_file is not None:
                                 # Display the chart
                                 st.plotly_chart(fig, use_container_width=True)
                                 
-elif sample_file:
-    result_df = convert_pdf_to_dataframe(
-            sample_file,
-            PROJECT_ID,
-            LOCATION,
-            PROCESSOR_ID,
-            0,
-        )
 
-    if result_df is not None:
-        headers = [col[0] for col in result_df.columns]
-
-        st.write("Please map the required columns:")
-        st.session_state.selected_columns['transaction_date'] = st.selectbox(
-            "Select the column header matching with Transaction Date",
-            headers,
-            key='transaction_date',
-            index=None
-        )
-        if st.session_state.selected_columns['transaction_date']:
-            st.session_state.selected_columns['description'] = st.selectbox(
-                "Select the column header matching with Description",
-                headers,
-                key='description',
-                index=None
-            )
-            if st.session_state.selected_columns['description']:
-                st.session_state.selected_columns['debit'] = st.selectbox(
-                    "Select the column header matching with Debit / Withdrawals",
-                    headers,
-                    key='debit',
-                    index=None
-                )
-                if st.session_state.selected_columns['debit']:
-                    st.session_state.selected_columns['credit'] = st.selectbox(
-                        "Select the column header matching with Credit / Deposits",
-                        headers,
-                        key='credit',
-                        index=None
-                    )
-                    if st.session_state.selected_columns['credit']:
-                        st.session_state.selected_columns['account_balance'] = st.selectbox(
-                            "Select the column header matching with Account Balance",
-                            headers,
-                            key='account_balance',
-                            index=None
-                        )
-
-                        if st.session_state.selected_columns['account_balance']:
-                            selected_columns = st.session_state.selected_columns
-                            selected_column_values = list(
-                                selected_columns.values())
-
-                            filtered_df = result_df[selected_column_values].copy(
-                            )
-                            filtered_df.columns = [
-                                key for key in selected_columns.keys()]
-                            
-                            
-                            currency_symbol = st.text_input(
-                                "Enter the currency symbol")
-                           
-                            
-                            #Cleaning begins
-                            filtered_df.replace({'transaction_date': {"": np.nan}}, inplace=True)
-                            filtered_df.replace({'account_balance': {"": np.nan}}, inplace=True)
-                            filtered_df.replace({'description': {"": np.nan}}, inplace=True)
-
-                            # Drop rows only if all columns are NaN
-                            filtered_df.dropna(subset = ['description'], inplace=True)
-
-                            # Categorize transactions
-                            filtered_df['category'] = filtered_df['description'].apply(
-                                categorize_transaction)
-
-
-                            # Replace None values with 0 for 'debit' and 'credit' columns
-                            filtered_df.replace({'debit': {"": 0, None: 0, np.nan: 0},
-                                                 'credit': {"": 0, None: 0, np.nan: 0}}, inplace=True)
-                            
-                            # Apply the function to the 'debit' and 'credit' columns
-                            filtered_df['debit'] = clean_and_convert_to_numeric(filtered_df['debit'])
-                            filtered_df['credit'] = clean_and_convert_to_numeric(filtered_df['credit'])
-                            filtered_df['account_balance'] = clean_and_convert_to_numeric(filtered_df['account_balance'])
-                            # Add another horizontal divider using HTML
-                            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
-                            
-                            # Add a section header for Data Visualization
-                            st.markdown('<h2 style="text-align: center;">Interactive DataFrame</h2>', unsafe_allow_html=True)
-                            st.write("This section will display your bank statement as an interactive dataframe")
-                            edited_df = st.data_editor(filtered_df,
-                                           column_config={
-                                               "debit": st.column_config.NumberColumn(
-                                                   "Debit / Withdrawals",
-                                                   format=f'{currency_symbol}%d'),
-                                               "credit": st.column_config.NumberColumn(
-                                                   "Credit / Deposits",
-                                                   format=f'{currency_symbol}%d'),
-                                               "account_balance": st.column_config.NumberColumn(
-                                                   "Account Balance",
-                                                   format=f'{currency_symbol}%d'),
-                                               "category": st.column_config.SelectboxColumn(
-                                                   "Category",
-                                                   width = "Large",
-                                                   help="Please select appropriate category for transaction",
-                                                   options=[
-                                                            "Food",
-                                                            "Transport",
-                                                            "Shopping",
-                                                            "Utlity Bills",
-                                                            "Entertainment",
-                                                            "Education",
-                                                            "Investment",
-                                                            "Others"
-                                                        ],
-                                                   required=True
-                                           )
-                                            }
-                                           
-                                                   )
-                            
-                            # Add another horizontal divider using HTML
-                            st.markdown('<hr style="border:1px solid white">', unsafe_allow_html=True)
-                            
-                            # Add a section header for Data Visualization
-                            st.markdown('<h2 style="text-align: center;">Data Visualisation</h2>', unsafe_allow_html=True)
-
-
-                            # DATA VISUALISATION
-                            # Chart 1: Debit vs Credit
-                            # Total debit and credit
-                            total_debit = filtered_df['debit'].sum()
-                            total_credit = filtered_df['credit'].sum()
-                            
-                            # Define data and labels
-                            labels = [f'Total Debit ({currency_symbol}{int(total_debit):,})',
-                                      f'Total Credit ({currency_symbol}{int(total_credit):,})']
-                            values = [total_debit, total_credit]
-                            
-                            # Define colors
-                            colors = ['#ff9999', '#66b3ff']
-                            
-                            # Create the doughnut chart
-                            fig = go.Figure(data=[go.Pie(labels=labels, values=values, textinfo='percent', hoverinfo='label+percent',
-                         marker=dict(colors=colors, line=dict(color='white', width=2)),
-                         hole=0.4)])
-                            
-                            fig.update_layout(title='#1 Income to Spend Ratio', title_font_size=18, title_font_weight='bold', title_x=0.0)
-                            
-                            # Show the pie chart in Streamlit
-                            st.plotly_chart(fig, use_container_width=True)
-    
-                            
-                            # Chart 2: Spend by Category
-                            # Grouping by category and summing up the debit values
-                            category_debit_sum = edited_df.groupby('category')['debit'].sum().reset_index()
-                            
-                            # Create the bar chart
-                            fig = px.bar(category_debit_sum, x='debit', y='category', orientation='h', 
-                                         labels={'debit': 'Total Debit', 'category': 'Category'},
-                                         text=category_debit_sum['debit'].astype(int).apply(lambda x: f"{currency_symbol}{x:,.0f}"))
-                            
-                            # Customize the layout
-                            fig.update_layout(title='#2 Total Debit by Category', xaxis_title="Amount Spent", yaxis_title="Category")
-                            
-                            # Make the text bolder
-                            fig.update_traces(textfont=dict(weight='bold'))
-                            
-                            # Display the chart
-                            st.plotly_chart(fig, use_container_width=True)
+        
