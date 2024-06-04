@@ -245,8 +245,7 @@ if pdf_content:
         data=pdf_content,
         file_name="Wells_Fargo_Bank_Sample_Statement.pdf",
         mime="application/pdf",
-        use_container_width = True,
-        type="primary"
+        use_container_width = True
     )
 else:
     st.write("Unable to provide the sample bank statement. Please try again later.")
