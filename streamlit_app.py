@@ -23,9 +23,9 @@ with open("service_account_key.json", "w") as f:
 # Set the environment variable for Google Cloud credentials
 os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = "service_account_key.json"
 
-PROJECT_ID = "437222221292"
+PROJECT_ID = "536835879706"
 LOCATION = "us"
-PROCESSOR_ID = "372c4ab238787a42"
+PROCESSOR_ID = "d37e84f146ab793a"
 
 # Title note with center alignment
 st.markdown("""
