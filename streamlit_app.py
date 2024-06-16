@@ -29,7 +29,7 @@ PROCESSOR_ID = "d37e84f146ab793a"
 
 # Title note with center alignment
 st.markdown("""
-    <h4 style="text-align: center;">*Note: This app is currently on Google Cloud's Free Trial, which will end on July 14, 2024.</h4>
+    <h4 style="text-align: center;">*Note: This app is currently on Google Cloud's Free Trial, which will end on August 30, 2024.</h4>
     """, unsafe_allow_html=True)
 
 # Center-align the title of the Streamlit app
