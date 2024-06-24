@@ -29,7 +29,7 @@ PROCESSOR_ID = "d37e84f146ab793a"
 
 # Title note with center alignment
 st.markdown("""
-    <h4 style="text-align: center;">*Web App Not Active - Archived</h4>
+    <h4 style="text-align: center;">*Web App Not Active - Document AI Processor Disabled</h4>
     """, unsafe_allow_html=True)
 
 # Center-align the title of the Streamlit app
